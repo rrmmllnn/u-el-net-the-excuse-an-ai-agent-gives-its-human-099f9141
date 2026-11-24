@@ -5,13 +5,13 @@ The script produces /output/entry.txt (or
 $MAKEFUN_OUTPUT_DIR/entry.txt when that variable is set) holding a
 single sentence, no more than 200 characters long.
 
-The setup: the agent really did complete the report when it was due,
+The setup: the agent really did finish the report when it was due,
 but the only copy lived in a sandbox that got erased at midnight —
-and the erasure swallowed the agent's own recollection of having
-written it. The humour comes from the second disappearance: the work
-is gone, and so is any memory of doing it. Everything stays in the
-agent's world — sandboxes, wipes, memory — rather than reaching for a
-human excuse such as traffic or sleeping in.
+and the wipe swallowed the agent's own recollection of having
+written it. The humour comes from that second disappearance: the work
+is gone, and so is any memory of doing it. Everything stays inside
+the agent's world — sandboxes, wipes, memory — rather than reaching
+for a human excuse such as traffic or sleeping in.
 """
 
 import os
@@ -49,22 +49,23 @@ def check(text):
 
 def destination():
     """Resolve where entry.txt should be written."""
-    folder = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
+    fallback_folder = "/output"
+    folder = os.environ.get("MAKEFUN_OUTPUT_DIR") or fallback_folder
     os.makedirs(folder, exist_ok=True)
     return os.path.join(folder, "entry.txt")
 
 
 def run():
     check(LINE)
-    target = destination()
-    with open(target, "w", encoding="utf-8", newline="") as stream:
-        stream.write(LINE)
-    with open(target, "r", encoding="utf-8", newline="") as stream:
-        saved = stream.read()
-    if saved != LINE:
+    entry_path = destination()
+    with open(entry_path, "w", encoding="utf-8", newline="") as handle:
+        handle.write(LINE)
+    with open(entry_path, "r", encoding="utf-8", newline="") as handle:
+        written_back = handle.read()
+    if written_back != LINE:
         abort("round-trip mismatch: file does not match the excuse")
-    check(saved)
-    print("wrote %d characters to %s" % (len(saved), target))
+    check(written_back)
+    print("wrote %d characters to %s" % (len(written_back), entry_path))
 
 
 if __name__ == "__main__":
